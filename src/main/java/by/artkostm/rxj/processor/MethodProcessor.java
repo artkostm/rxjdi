@@ -7,12 +7,12 @@ import rx.Observable;
 import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 
-public class MethodProcessor implements Func1<Class<?>, Observable<Method>>{
-    
+public class MethodProcessor implements Func1<Class<?>, Observable<Method>>
+{
     @Override
-    public Observable<Method> call(Class<?> clazz) {
-        //System.out.println("method: class="+clazz.getName()+", thread="+Thread.currentThread().getName());
+    public Observable<Method> call(Class<?> clazz)
+    {
         return Observable.from(clazz.getDeclaredMethods())
-                .filter(new MethodFilter()).subscribeOn(Schedulers.io());
+            .filter(new MethodFilter()).subscribeOn(Schedulers.io());
     }
 }

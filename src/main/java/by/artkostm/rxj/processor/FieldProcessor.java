@@ -7,12 +7,13 @@ import rx.Observable;
 import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 
-public class FieldProcessor implements Func1<Class<?>, Observable<Field>>{
+public class FieldProcessor implements Func1<Class<?>, Observable<Field>>
+{
 
     @Override
-    public Observable<Field> call(Class<?> clazz) {
-        //System.out.println("field: class="+clazz.getName()+", thread="+Thread.currentThread().getName());
+    public Observable<Field> call(Class<?> clazz)
+    {
         return Observable.from(clazz.getDeclaredFields())
-                .filter(new FieldFilter()).subscribeOn(Schedulers.io());
+            .filter(new FieldFilter()).subscribeOn(Schedulers.io());
     }
 }

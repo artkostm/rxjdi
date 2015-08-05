@@ -7,12 +7,13 @@ import rx.Observable;
 import rx.functions.Func1;
 import rx.schedulers.Schedulers;
 
-public class ConstructorProcessor implements Func1<Class<?>, Observable<Constructor<?>>>{
+public class ConstructorProcessor implements Func1<Class<?>, Observable<Constructor<?>>>
+{
 
     @Override
-    public Observable<Constructor<?>> call(Class<?> clazz) {
-        //System.out.println("constructor: class="+clazz.getName()+", thread="+Thread.currentThread().getName());
+    public Observable<Constructor<?>> call(Class<?> clazz)
+    {
         return Observable.from(clazz.getConstructors())
-                .filter(new ConstructorFilter()).subscribeOn(Schedulers.io());
+            .filter(new ConstructorFilter()).subscribeOn(Schedulers.io());
     }
 }

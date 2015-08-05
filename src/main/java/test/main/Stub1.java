@@ -1,5 +1,8 @@
 package test.main;
 
+import by.artkostm.rxj.annotation.Configuration;
+
+@Configuration
 public class Stub1 {
     private String f1;
     private String f2;
