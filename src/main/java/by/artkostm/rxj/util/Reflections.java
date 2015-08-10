@@ -2,6 +2,9 @@ package by.artkostm.rxj.util;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -41,5 +44,20 @@ public class Reflections {
             }
         }
         return null;
+    }
+    
+    public static Method[] getStaticMethods(final Class<?> clazz)
+    {
+        List<Method> staticMethods = new ArrayList<>();
+        for (Method method : clazz.getDeclaredMethods())
+        {
+            final boolean isStatic = Modifier.isStatic(method.getModifiers());
+            if (isStatic)
+            {
+                staticMethods.add(method);
+            }
+        }
+        
+        return (Method[]) staticMethods.toArray();
     }
 }

@@ -2,7 +2,7 @@ package by.artkostm.rxj.metadata;
 
 import java.lang.reflect.Method;
 
-public interface BeanMetadata
+public interface LifeCycleMetadata
 {
     public Object getObject();
     public Role getRole();

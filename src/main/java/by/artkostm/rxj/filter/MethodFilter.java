@@ -9,8 +9,8 @@ public class MethodFilter implements Func1<Method, Boolean>{
 
     @Override
     public Boolean call(Method t) {
-        final boolean isPrivate = t.getModifiers() == Modifier.PRIVATE 
-                || t.getModifiers() == Modifier.PROTECTED;
+        final boolean isPrivate = Modifier.isProtected(t.getModifiers()) 
+                || Modifier.isPrivate(t.getModifiers());
         return !isPrivate;
     }
 }

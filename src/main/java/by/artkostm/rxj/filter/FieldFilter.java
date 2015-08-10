@@ -10,7 +10,7 @@ public class FieldFilter implements Func1<Field, Boolean>{
     
     @Override
     public Boolean call(Field field) {
-        final boolean isPublic = Modifier.PUBLIC == field.getModifiers();
+        final boolean isPublic = Modifier.isPublic(field.getModifiers());
         if (!isPublic)
         {
             final Class<?> clazz = field.getDeclaringClass();
