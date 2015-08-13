@@ -4,6 +4,7 @@ import rx.functions.Func1;
 
 /**
  * The ClassFilter class to filter the non-class resources 
+ * 
  * @author Artsiom
  *
  */

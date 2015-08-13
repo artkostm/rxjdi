@@ -1,34 +1,42 @@
 package by.artkostm.rxj.context;
 
-import java.lang.reflect.Method;
-import java.util.List;
-import java.util.Set;
-
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import by.artkostm.rxj.annotation.Configuration;
-import by.artkostm.rxj.filter.BeanMethodFilter;
-import by.artkostm.rxj.filter.ClassFilter;
 import by.artkostm.rxj.filter.ConfigurationClassFilter;
 import by.artkostm.rxj.metadata.ConfigurationMetadata;
+import by.artkostm.rxj.metadata.LifeCycleMetadata;
 import by.artkostm.rxj.metadata.builder.ConfigurationBuilder;
-import by.artkostm.rxj.processor.MethodProcessor;
 import by.artkostm.rxj.scanner.ClassScanner;
 import by.artkostm.rxj.scanner.PackageClassScanner;
+import by.artkostm.rxj.util.Reflections;
 import rx.Observable;
-import rx.Subscriber;
-import rx.Observable.OnSubscribe;
+import rx.functions.Action1;
 import rx.functions.Func1;
 
+/**
+ * Application context implementation using RxJava and Observable concept
+ * @author Artsiom_Chuiko
+ *
+ */
 public class ObservableApplicationContext extends ApplicationContext
 {
-    private final String packagePath;
-    private final Set<Class<?>> classes;
+    private static final Logger LOG = LogManager.getLogger(ObservableApplicationContext.class);
     
+    private final String packagePath;
+    
+    private final Observable<Class<?>> classObservable;
+    
+    /**
+     * 
+     * @param packagePath - the base package path to scan classes
+     */
     public ObservableApplicationContext(String packagePath)
     {
         super();
         this.packagePath = packagePath;
         final ClassScanner<String> scanner = new PackageClassScanner();
-        classes = scanner.scan(packagePath);
+        classObservable = Observable.from(scanner.scan(packagePath));
         createContext();
     }
     
@@ -37,56 +45,47 @@ public class ObservableApplicationContext extends ApplicationContext
     {
         final Observable<Class<?>> configObservable = classObservable.filter(new ConfigurationClassFilter());
         
-        final List<ConfigurationMetadata> configs =  configObservable.map(new Func1<Class<?>, ConfigurationMetadata>()
+        putConfigMetadataToContext(configObservable);
+    }
+    
+    /**
+     * To put configuration meta data to the context;
+     * @param configObservable
+     */
+    private void putConfigMetadataToContext(final Observable<Class<?>> configObservable)
+    {
+        configObservable.map(new Func1<Class<?>, LifeCycleMetadata>()
         {
-
             @Override
             public ConfigurationMetadata call(Class<?> t)
             {
-                final Configuration cAn = t.getAnnotation(Configuration.class);
-                String name = cAn.name();
-                if (name.isEmpty())
-                {
-                    name = t.getSimpleName() + ".Configuration";
-                }
+                final String name = Reflections.getAnnotaitedClassName(t, Configuration.class);
                 final ConfigurationMetadata configMetadata = ConfigurationBuilder.buildConfiguration(t, name);
+                LOG.debug("Created configuration with name : " + name + ", " + configMetadata);
                 return configMetadata;
             }
-        }).toList().toBlocking().single();
-        
-        final Observable<Method> factoryMethodObservable = 
-                configObservable.flatMap(new MethodProcessor()).filter(new BeanMethodFilter());
-        factoryMethodObservable.subscribe();
+        }).forEach(contexInserter);
     }
-    
-    private Observable<Class<?>> classObservable = 
-            Observable.create(new OnSubscribe<Class<?>>()
-            {
-                @Override
-                public void call(Subscriber<? super Class<?>> t)
-                {
-                    for (Class<?> clazz : classes)
-                    {
-                        t.onNext(clazz);
-                        t.onCompleted();
-                    }
-                }
-            }).filter(new ClassFilter());
-    
-    private Subscriber<Method> createBeans = new Subscriber<Method>()
+   
+    /**
+     * Anonymous class to insert a meta data object to the context;
+     */
+    private final Action1<LifeCycleMetadata> contexInserter = new Action1<LifeCycleMetadata>()
     {
         @Override
-        public void onCompleted()
-        {}
-
-        @Override
-        public void onError(Throwable e)
-        {}
-
-        @Override
-        public void onNext(Method t)
+        public void call(LifeCycleMetadata t)
         {
-            
+            LOG.debug("Added '" + t.getName() + "' bean to the Context.");
+            context.put(t.getName(), t);
         }
-   };
+    };
+   
+    /**
+     * 
+     * @return the package path
+     */
+    public String getPackagePath()
+    {
+        return packagePath;
+    }
 }

@@ -5,9 +5,9 @@ import java.util.Map;
 
 import by.artkostm.rxj.metadata.LifeCycleMetadata;
 
-public abstract class ApplicationContext implements Context
+public abstract class ApplicationContext implements BeanFactory
 {
-    Map<String, LifeCycleMetadata> context;
+    protected Map<String, LifeCycleMetadata> context;
     
     public ApplicationContext()
     {
@@ -42,5 +42,8 @@ public abstract class ApplicationContext implements Context
         return false;
     }
     
+    /**
+     * The method to create the context. Usage: after creating application context object;
+     */
     protected abstract void createContext();
 }
