@@ -1,5 +1,6 @@
 package test.main;
 
+import by.artkostm.rxj.annotation.Bean;
 import by.artkostm.rxj.annotation.Configuration;
 
 @Configuration(name = "stub")
@@ -38,6 +39,12 @@ public class Configuration1
     public void setF1(String f1)
     {
         this.f1 = f1;
+    }
+    
+    @Bean(name = "st1")
+    public Stub1 getStub1()
+    {
+        return new Stub1();
     }
 
     @Override
