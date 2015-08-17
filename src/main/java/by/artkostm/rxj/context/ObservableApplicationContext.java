@@ -89,7 +89,8 @@ public class ObservableApplicationContext extends ApplicationContext
                 final LifeCycleMetadata beanMetadata = BeanBuilder.build(t, name, skipBody);
                 return beanMetadata;
             }
-        });
+        })//TODO:set property for role == Role.Bean
+        .forEach(contexInserter);
     }
    
     /**
