@@ -9,7 +9,10 @@ import java.util.List;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
+import by.artkostm.rxj.annotation.Bean;
 import by.artkostm.rxj.annotation.Configuration;
+import by.artkostm.rxj.annotation.Destroy;
+import by.artkostm.rxj.annotation.Init;
 
 public class Reflections {
     
@@ -20,6 +23,34 @@ public class Reflections {
         final String firstLetter = String.valueOf(fieldName.charAt(0)).toUpperCase();
         final String setter = SETTER_PREFIX + firstLetter + fieldName.substring(1);
         return setter;
+    }
+    
+    public static String getBeanName(Method m)
+    {
+        if (m.isAnnotationPresent(Bean.class))
+        {
+            final Bean bean = m.getAnnotation(Bean.class);
+            String name = bean.name();
+            if (name.isEmpty())
+            {
+                name = m.getName();
+            }
+            return name;
+        }
+        
+        return null;
+    }
+    
+    public static boolean getSkipBody(Method m)
+    {
+        if (m.isAnnotationPresent(Bean.class))
+        {
+            final Bean bean = m.getAnnotation(Bean.class);
+            final boolean skipBody = bean.skipBpdy();
+            return skipBody;
+        }
+        
+        return true;
     }
     
     public static String getAnnotaitedClassName(Class<?> annotaitedClass, Class<? extends Annotation> annotationClass)
@@ -39,6 +70,16 @@ public class Reflections {
             }
         }
         return null;
+    }
+    
+    public static Method findDestroyMethod(final Class<?> clazz)
+    {
+        return findMethodAnnotatedWith(clazz, Destroy.class);
+    }
+    
+    public static Method findInitMethod(final Class<?> clazz)
+    {
+        return findMethodAnnotatedWith(clazz, Init.class);
     }
     
     public static Method findPreDestroyMethod(final Class<?> clazz)

@@ -1,12 +1,17 @@
 package by.artkostm.rxj.context;
 
+import java.lang.reflect.Method;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
 import by.artkostm.rxj.annotation.Configuration;
 import by.artkostm.rxj.filter.ConfigurationClassFilter;
 import by.artkostm.rxj.metadata.ConfigurationMetadata;
 import by.artkostm.rxj.metadata.LifeCycleMetadata;
+import by.artkostm.rxj.metadata.builder.BeanBuilder;
 import by.artkostm.rxj.metadata.builder.ConfigurationBuilder;
+import by.artkostm.rxj.processor.FactoryMethodProcessor;
 import by.artkostm.rxj.scanner.ClassScanner;
 import by.artkostm.rxj.scanner.PackageClassScanner;
 import by.artkostm.rxj.util.Reflections;
@@ -46,6 +51,7 @@ public class ObservableApplicationContext extends ApplicationContext
         final Observable<Class<?>> configObservable = classObservable.filter(new ConfigurationClassFilter());
         
         putConfigMetadataToContext(configObservable);
+        processFactoryMethods(configObservable);
     }
     
     /**
@@ -65,6 +71,25 @@ public class ObservableApplicationContext extends ApplicationContext
                 return configMetadata;
             }
         }).forEach(contexInserter);
+    }
+    
+    /**
+     * 
+     * @param configObservable
+     */
+    private void processFactoryMethods(final Observable<Class<?>> configObservable)
+    {
+        configObservable.flatMap(new FactoryMethodProcessor()).map(new Func1<Method, LifeCycleMetadata>()
+        {
+            @Override
+            public LifeCycleMetadata call(Method t)
+            {
+                final String name = Reflections.getBeanName(t);
+                final boolean skipBody = Reflections.getSkipBody(t);
+                final LifeCycleMetadata beanMetadata = BeanBuilder.build(t, name, skipBody);
+                return beanMetadata;
+            }
+        });
     }
    
     /**

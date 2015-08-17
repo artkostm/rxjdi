@@ -10,4 +10,5 @@ import java.lang.annotation.Target;
 public @interface Bean 
 {
     String name() default "";
+    boolean skipBpdy() default true;
 }
