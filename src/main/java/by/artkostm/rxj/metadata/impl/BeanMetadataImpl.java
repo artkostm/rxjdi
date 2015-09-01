@@ -76,7 +76,7 @@ public class BeanMetadataImpl implements BeanMetadata
     @Override
     public Method getPreDestroyMethod()
     {
-        return null;
+        return destroyMethod;
     }
 
     @Override

@@ -114,7 +114,7 @@ public class ObservableApplicationContext extends ApplicationContext
         @Override
         public void call(LifeCycleMetadata lcm)
         {
-            final Method init = lcm.getInitMethod();
+            final Method init = lcm.getPostConstructMethod();
             if (init != null)
             {
                 try
@@ -173,6 +173,25 @@ public class ObservableApplicationContext extends ApplicationContext
     @Override
     protected void close()
     {
-        
+        Observable.from(context.values())
+            .doOnNext(new Action1<LifeCycleMetadata>()
+            {
+                @Override
+                public void call(LifeCycleMetadata lcm)
+                {
+                    final Method destroy = lcm.getPreDestroyMethod();
+                    if (destroy != null)
+                    {
+                        try
+                        {
+                            destroy.invoke(lcm.getObject());
+                        }
+                        catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e)
+                        {
+                            LOG.warn("Cannot invoke destroy method for bean: " + lcm.getName());
+                        }
+                    }
+                }
+            }).subscribe();
     }
 }

@@ -14,5 +14,6 @@ public class Main
         System.out.println(st2);
         System.out.println(context.getBean("st1"));
         System.out.println("Time: " + (System.currentTimeMillis() - start) + "ms");
+        Thread.sleep(2000);
     }
 }

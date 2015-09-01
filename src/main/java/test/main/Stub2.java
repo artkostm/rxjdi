@@ -1,5 +1,7 @@
 package test.main;
 
+import javax.annotation.PreDestroy;
+
 import by.artkostm.rxj.annotation.Inject;
 
 public class Stub2
@@ -20,8 +22,11 @@ public class Stub2
     public static void m1()
     {}
 
+    @PreDestroy
     public void m2()
-    {}
+    {
+        System.out.println("DESTROY");
+    }
 
     @SuppressWarnings("unused")
     private void m3()
