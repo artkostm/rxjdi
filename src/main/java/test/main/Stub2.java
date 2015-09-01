@@ -7,8 +7,15 @@ public class Stub2
     @Inject(name = "st1")
     private Stub1 st1;
     
+    private String m;
+    
     public Stub2()
     {}
+    
+    public Stub2(String str)
+    {
+        m = str;
+    }
 
     public static void m1()
     {}
@@ -23,6 +30,6 @@ public class Stub2
     @Override
     public String toString()
     {
-        return "Stub2 [st1=" + st1 + "]";
+        return "Stub2 [st1=" + st1 + ", m=" + m + "]";
     }
 }

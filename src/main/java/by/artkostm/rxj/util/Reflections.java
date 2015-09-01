@@ -1,6 +1,7 @@
 package by.artkostm.rxj.util;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -11,8 +12,7 @@ import javax.annotation.PreDestroy;
 
 import by.artkostm.rxj.annotation.Bean;
 import by.artkostm.rxj.annotation.Configuration;
-import by.artkostm.rxj.annotation.Destroy;
-import by.artkostm.rxj.annotation.Init;
+import by.artkostm.rxj.annotation.Inject;
 
 public class Reflections {
     
@@ -23,6 +23,22 @@ public class Reflections {
         final String firstLetter = String.valueOf(fieldName.charAt(0)).toUpperCase();
         final String setter = SETTER_PREFIX + firstLetter + fieldName.substring(1);
         return setter;
+    }
+    
+    public static String getInjectedBeanName(Field field)
+    {
+        if (field.isAnnotationPresent(Inject.class))
+        {
+            final Inject inject = field.getAnnotation(Inject.class);
+            String name = inject.name();
+            if (name.isEmpty())
+            {
+                name = getFieldName(field);
+            }
+            return name;
+        }
+        
+        return null;
     }
     
     public static String getBeanName(Method m)
@@ -74,12 +90,12 @@ public class Reflections {
     
     public static Method findDestroyMethod(final Class<?> clazz)
     {
-        return findMethodAnnotatedWith(clazz, Destroy.class);
+        return findMethodAnnotatedWith(clazz, PreDestroy.class);
     }
     
     public static Method findInitMethod(final Class<?> clazz)
     {
-        return findMethodAnnotatedWith(clazz, Init.class);
+        return findMethodAnnotatedWith(clazz, PostConstruct.class);
     }
     
     public static Method findPreDestroyMethod(final Class<?> clazz)
@@ -118,5 +134,24 @@ public class Reflections {
         }
         
         return (Method[]) staticMethods.toArray();
+    }
+    
+    public static List<Field> getAnnotaitedFields(Class<?> clazz, Class<? extends Annotation> annotationClass)
+    {
+        final Field[] fields = clazz.getDeclaredFields();
+        final List<Field> annotaitedFields = new ArrayList<>();
+        for (Field field : fields)
+        {
+            if (field.isAnnotationPresent(annotationClass))
+            {
+                annotaitedFields.add(field);
+            }
+        }
+        return annotaitedFields;
+    }
+    
+    public static String getFieldName(Field field)
+    {
+        return field.getName();
     }
 }

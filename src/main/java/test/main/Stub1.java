@@ -1,8 +1,20 @@
 package test.main;
 
+import javax.annotation.PostConstruct;
+
+import by.artkostm.rxj.annotation.Inject;
+
 public class Stub1
 {
     private String f1;
+    @Inject
+    private Object getInt;
+    
+    @PostConstruct
+    public void init()
+    {
+        f1 = "Hello world";
+    }
 
     public String getF1()
     {
@@ -17,6 +29,6 @@ public class Stub1
     @Override
     public String toString()
     {
-        return "Stub1 [f1=" + f1 + "]";
+        return "Stub1 [f1=" + f1 + ", getInt=" + getInt + "]";
     }
 }

@@ -1,11 +1,13 @@
 package by.artkostm.rxj.context;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import java.util.List;
 
 import by.artkostm.rxj.annotation.Configuration;
+import by.artkostm.rxj.annotation.Inject;
+import by.artkostm.rxj.filter.BeanMetadataFilter;
 import by.artkostm.rxj.filter.ConfigurationClassFilter;
 import by.artkostm.rxj.metadata.ConfigurationMetadata;
 import by.artkostm.rxj.metadata.LifeCycleMetadata;
@@ -14,6 +16,7 @@ import by.artkostm.rxj.metadata.builder.ConfigurationBuilder;
 import by.artkostm.rxj.processor.FactoryMethodProcessor;
 import by.artkostm.rxj.scanner.ClassScanner;
 import by.artkostm.rxj.scanner.PackageClassScanner;
+import by.artkostm.rxj.util.FieldInjector;
 import by.artkostm.rxj.util.Reflections;
 import rx.Observable;
 import rx.functions.Action1;
@@ -26,7 +29,6 @@ import rx.functions.Func1;
  */
 public class ObservableApplicationContext extends ApplicationContext
 {
-    private static final Logger LOG = LogManager.getLogger(ObservableApplicationContext.class);
     
     private final String packagePath;
     
@@ -79,19 +81,72 @@ public class ObservableApplicationContext extends ApplicationContext
      */
     private void processFactoryMethods(final Observable<Class<?>> configObservable)
     {
-        configObservable.flatMap(new FactoryMethodProcessor()).map(new Func1<Method, LifeCycleMetadata>()
+        final Observable<LifeCycleMetadata> constructedBeans 
+                 = configObservable.flatMap(new FactoryMethodProcessor())
+                                   .map(new Func1<Method, LifeCycleMetadata>()
         {
             @Override
             public LifeCycleMetadata call(Method t)
             {
                 final String name = Reflections.getBeanName(t);
                 final boolean skipBody = Reflections.getSkipBody(t);
-                final LifeCycleMetadata beanMetadata = BeanBuilder.build(t, name, skipBody);
+                final String configName = Reflections.getAnnotaitedClassName(t.getDeclaringClass(), Configuration.class);
+                final Object config = getBean(configName);
+                final LifeCycleMetadata beanMetadata = BeanBuilder.build(t, config, name, skipBody);
                 return beanMetadata;
             }
-        })//TODO:set property for role == Role.Bean
-        .forEach(contexInserter);
+        });
+        
+        constructedBeans.forEach(contexInserter);
+        //sets properties for role == Role.Bean
+        //invokes post constructor method
+        Observable.from(context.values()).filter(new BeanMetadataFilter())
+                        .doOnNext(propertySetter)
+                        .doOnNext(postConstructInvoker)
+                        .subscribe();
     }
+    
+    /**
+     * To invoke PostConstruct annotated methods
+     */
+    private final Action1<LifeCycleMetadata> postConstructInvoker = new Action1<LifeCycleMetadata>()
+    {
+        @Override
+        public void call(LifeCycleMetadata lcm)
+        {
+            final Method init = lcm.getInitMethod();
+            if (init != null)
+            {
+                try
+                {
+                    init.invoke(lcm.getObject());
+                }
+                catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e)
+                {
+                    LOG.warn("Cannot invoke init method for bean: " + lcm.getName());
+                }
+            }
+        }
+    };
+    
+    /**
+     * Sets properties for meta data where role == Role.Bean
+     */
+    private final Action1<LifeCycleMetadata> propertySetter = new Action1<LifeCycleMetadata>()
+    {
+        @Override
+        public void call(LifeCycleMetadata lcm)
+        {
+            final List<Field> fields = Reflections.getAnnotaitedFields(lcm.getType(), Inject.class);
+            final FieldInjector fieldInjector = new FieldInjector();
+            for (Field field : fields)
+            {
+                final String injectedBeanName = Reflections.getInjectedBeanName(field);
+                final Object value = getBean(injectedBeanName);
+                fieldInjector.injectField(lcm.getObject(), field, value);
+            }
+        }
+    };
    
     /**
      * Anonymous class to insert a meta data object to the context;
@@ -113,5 +168,11 @@ public class ObservableApplicationContext extends ApplicationContext
     public String getPackagePath()
     {
         return packagePath;
+    }
+
+    @Override
+    protected void close()
+    {
+        
     }
 }

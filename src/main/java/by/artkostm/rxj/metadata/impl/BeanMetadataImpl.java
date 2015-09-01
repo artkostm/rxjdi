@@ -13,8 +13,6 @@ public class BeanMetadataImpl implements BeanMetadata
     private final Method destroyMethod;
     private final boolean skipBody;
 
-    
-
     public BeanMetadataImpl(Object obj, String name, Method factoryMethod, 
         Method initMethod, Method destroyMethod, boolean skipBody)
     {
@@ -72,7 +70,7 @@ public class BeanMetadataImpl implements BeanMetadata
     @Override
     public Method getPostConstructMethod()
     {
-        return null;
+        return initMethod;
     }
 
     @Override

@@ -3,6 +3,9 @@ package by.artkostm.rxj.metadata.builder;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import by.artkostm.rxj.metadata.LifeCycleMetadata;
 import by.artkostm.rxj.metadata.impl.BeanMetadataImpl;
 import by.artkostm.rxj.util.MethodInvoker;
@@ -10,50 +13,42 @@ import by.artkostm.rxj.util.Reflections;
 
 public class BeanBuilder
 {
-    public LifeCycleMetadata buildBean(final Object conf, final Method factoryMethod, final String name, final boolean skipBody)
-    {
-        final Class<?> beanClass = factoryMethod.getReturnType();
-        
-        if (skipBody && factoryMethod.getParameterTypes().length == 0)
-        {
-            try
-            {
-                @SuppressWarnings("unused")
-                final Object obj = factoryMethod.invoke(conf);
-            }
-            catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e)
-            {
-                // TODO add logger
-            }
-        }
-        else
-        {
-            try
-            {
-                final Object obj = MethodInvoker.invokeConstroctor(beanClass);
-                @SuppressWarnings("unused")
-                final LifeCycleMetadata lcm = new BeanMetadataImpl(obj, name, factoryMethod, 
-                    Reflections.findInitMethod(beanClass), Reflections.findDestroyMethod(beanClass), skipBody);
-            }
-            catch (InstantiationException | IllegalAccessException 
-                    | ClassNotFoundException | IllegalArgumentException 
-                    | InvocationTargetException | NoSuchMethodException 
-                    | SecurityException e)
-            {
-                // TODO add logger
-            }
-        }
-        
-        return null;
-    }  
+    private static final Logger LOG = LogManager.getLogger(BeanBuilder.class);
     
-    public static LifeCycleMetadata build(final Method factoryMethod, final String name, final boolean skipBody)
+    public static LifeCycleMetadata build(final Method factoryMethod, final Object config, final String name, final boolean skipBody)
     {
         final Class<?> beanClass = factoryMethod.getReturnType();
+        final Object object = createObject(beanClass, factoryMethod, config, skipBody);
         
-        final LifeCycleMetadata lcm = new BeanMetadataImpl(null, name, factoryMethod, 
+        
+        final LifeCycleMetadata lcm = new BeanMetadataImpl(object, name, factoryMethod, 
             Reflections.findInitMethod(beanClass), Reflections.findDestroyMethod(beanClass), skipBody);
         
         return lcm;
     }  
+    
+    private static Object createObject(Class<?> beanClass, Method m, Object config, boolean skipBody)
+    {
+        try
+        {
+            if (skipBody)
+            {
+                final Object obj = MethodInvoker.invokeConstroctor(beanClass);
+                return obj;
+            }
+            else
+            {
+                final Object obj = m.invoke(config);
+                return obj;
+            }
+        }
+        catch (InstantiationException | IllegalAccessException 
+                | ClassNotFoundException | IllegalArgumentException 
+                | InvocationTargetException | NoSuchMethodException 
+                | SecurityException e)
+        {
+            LOG.warn("Cannot create bean for class: " + beanClass.getName());
+        }
+        return null;
+    }
 }

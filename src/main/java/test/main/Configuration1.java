@@ -46,6 +46,12 @@ public class Configuration1
     {
         return new Stub1();
     }
+    
+    @Bean(name = "st2", skipBpdy = false)
+    public Stub2 getStub2()
+    {
+        return new Stub2(f1);
+    }
 
     @Override
     public String toString()
