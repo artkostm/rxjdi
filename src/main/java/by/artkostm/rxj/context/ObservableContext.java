@@ -12,8 +12,9 @@ import by.artkostm.rxj.filter.BeanMetadataFilter;
 import by.artkostm.rxj.filter.ConfigurationClassFilter;
 import by.artkostm.rxj.metadata.ConfigurationMetadata;
 import by.artkostm.rxj.metadata.LifeCycleMetadata;
+import by.artkostm.rxj.metadata.LifeCycleMetadata.Role;
 import by.artkostm.rxj.metadata.builder.BeanBuilder;
-import by.artkostm.rxj.metadata.builder.ConfigurationBuilder;
+import by.artkostm.rxj.metadata.builder.ConfigurationSingletonBuilder;
 import by.artkostm.rxj.processor.FactoryMethodProcessor;
 import by.artkostm.rxj.scanner.ClassScanner;
 import by.artkostm.rxj.scanner.PackageClassScanner;
@@ -72,9 +73,12 @@ public class ObservableContext extends DependencyContext
                 if (name == null)
                 {
                     name = Reflections.getAnnotaitedClassName(t, Singleton.class);
+                    final ConfigurationMetadata configMetadata = ConfigurationSingletonBuilder.buildConfigurationSingleton(t, name, Role.Singleton);
+                    //LOG.debug("Created singleton with name : " + name + ", " + configMetadata);
+                    return configMetadata;
                 }
-                final ConfigurationMetadata configMetadata = ConfigurationBuilder.buildConfiguration(t, name);
-                LOG.debug("Created configuration with name : " + name + ", " + configMetadata);
+                final ConfigurationMetadata configMetadata = ConfigurationSingletonBuilder.buildConfigurationSingleton(t, name, Role.Configuration);
+                //LOG.debug("Created configuration with name : " + name + ", " + configMetadata);
                 return configMetadata;
             }
         }).forEach(contexInserter);
@@ -147,7 +151,11 @@ public class ObservableContext extends DependencyContext
             for (Field field : fields)
             {
                 final String injectedBeanName = Reflections.getInjectedBeanName(field);
-                final Object value = getBean(injectedBeanName);
+                Object value = getBean(injectedBeanName);
+                if (value == null)
+                {
+                    value = getBean(field.getType());
+                }
                 fieldInjector.injectField(lcm.getObject(), field, value);
             }
         }
@@ -161,7 +169,7 @@ public class ObservableContext extends DependencyContext
         @Override
         public void call(LifeCycleMetadata t)
         {
-            LOG.debug("Added '" + t.getName() + "' bean to the Context.");
+            //LOG.debug("Added '" + t.getName() + "' bean to the Context.");
             context.put(t.getName(), t);
         }
     };

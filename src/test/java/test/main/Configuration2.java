@@ -11,4 +11,10 @@ public class Configuration2
     {
         return 10;
     }
+    
+    @Bean(skipBody = false)
+    public String host()
+    {
+        return "localhost";
+    }
 }

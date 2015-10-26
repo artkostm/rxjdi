@@ -10,12 +10,14 @@ public class ConfigurationMetadataImpl implements ConfigurationMetadata
 {
     private final Object configurationObject;
     private final String name;
+    private final Role role;
 
-    public ConfigurationMetadataImpl(Object configurationObject, String name)
+    public ConfigurationMetadataImpl(Object configurationObject, String name, Role role)
     {
         super();
         this.configurationObject = configurationObject;
         this.name = name;
+        this.role = role;
     }
 
     @Override
@@ -27,7 +29,7 @@ public class ConfigurationMetadataImpl implements ConfigurationMetadata
     @Override
     public Role getRole()
     {
-        return Role.Configuration;
+        return role;
     }
 
     @Override

@@ -16,6 +16,6 @@ public interface LifeCycleMetadata
     
     public enum Role
     {
-        Bean, Configuration;
+        Bean, Singleton, Configuration;
     }
 }

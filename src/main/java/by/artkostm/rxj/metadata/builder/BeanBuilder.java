@@ -1,6 +1,5 @@
 package by.artkostm.rxj.metadata.builder;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import org.apache.logging.log4j.LogManager;
@@ -42,10 +41,7 @@ public class BeanBuilder
                 return obj;
             }
         }
-        catch (InstantiationException | IllegalAccessException 
-                | ClassNotFoundException | IllegalArgumentException 
-                | InvocationTargetException | NoSuchMethodException 
-                | SecurityException e)
+        catch (Exception e)
         {
             LOG.warn("Cannot create bean for class: " + beanClass.getName());
         }

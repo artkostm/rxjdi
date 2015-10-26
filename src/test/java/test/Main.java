@@ -1,5 +1,6 @@
 package test;
 
+import test.main.HttpServer;
 import test.main.Stub2;
 import test.main.inner.HttpServerInitializer;
 import by.artkostm.rxj.context.Bootstrap;
@@ -17,10 +18,13 @@ public class Main extends BindModule
         System.out.println(st2);
         System.out.println(context.getBean("st1"));
         HttpServerInitializer initialiser = (HttpServerInitializer) context.getBean(HttpServerInitializer.class);
+        System.out.println(context.getBean("host"));
         System.out.println(initialiser.getClass().getName());
+        final HttpServer server = (HttpServer) context.getBean(HttpServer.class);
+        server.get();
         System.out.println("Time: " + (System.currentTimeMillis() - start) + "ms");
         
-        Thread.sleep(2000);
+        //Thread.sleep(2000);
     }
 
     @Override

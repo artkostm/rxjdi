@@ -9,6 +9,6 @@ public class BeanMetadataFilter implements Func1<LifeCycleMetadata, Boolean>
     @Override
     public Boolean call(LifeCycleMetadata t)
     {
-        return t.getRole() == Role.Bean;
+        return t.getRole() == Role.Bean || t.getRole() == Role.Singleton;
     }
 }
