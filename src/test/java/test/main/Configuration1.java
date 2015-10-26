@@ -47,7 +47,7 @@ public class Configuration1
         return new Stub1();
     }
     
-    @Bean(name = "st2", skipBpdy = false)
+    @Bean(name = "st2", skipBody = false)
     public Stub2 getStub2()
     {
         return new Stub2(f1);

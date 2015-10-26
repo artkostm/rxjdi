@@ -6,7 +6,7 @@ import by.artkostm.rxj.annotation.Configuration;
 @Configuration(name = "testconfig")
 public class Configuration2
 {
-    @Bean(skipBpdy = false)
+    @Bean(skipBody = false)
     public static Object getInt()
     {
         return 10;

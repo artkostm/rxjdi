@@ -7,6 +7,7 @@ import java.util.List;
 
 import by.artkostm.rxj.annotation.Configuration;
 import by.artkostm.rxj.annotation.Inject;
+import by.artkostm.rxj.annotation.Singleton;
 import by.artkostm.rxj.filter.BeanMetadataFilter;
 import by.artkostm.rxj.filter.ConfigurationClassFilter;
 import by.artkostm.rxj.metadata.ConfigurationMetadata;
@@ -27,7 +28,7 @@ import rx.functions.Func1;
  * @author Artsiom_Chuiko
  *
  */
-public class ObservableApplicationContext extends ApplicationContext
+public class ObservableContext extends DependencyContext
 {
     
     private final String packagePath;
@@ -38,7 +39,7 @@ public class ObservableApplicationContext extends ApplicationContext
      * 
      * @param packagePath - the base package path to scan classes
      */
-    public ObservableApplicationContext(String packagePath)
+    public ObservableContext(String packagePath)
     {
         super();
         this.packagePath = packagePath;
@@ -67,7 +68,11 @@ public class ObservableApplicationContext extends ApplicationContext
             @Override
             public ConfigurationMetadata call(Class<?> t)
             {
-                final String name = Reflections.getAnnotaitedClassName(t, Configuration.class);
+                String name = Reflections.getAnnotaitedClassName(t, Configuration.class);
+                if (name == null)
+                {
+                    name = Reflections.getAnnotaitedClassName(t, Singleton.class);
+                }
                 final ConfigurationMetadata configMetadata = ConfigurationBuilder.buildConfiguration(t, name);
                 LOG.debug("Created configuration with name : " + name + ", " + configMetadata);
                 return configMetadata;

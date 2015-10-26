@@ -16,6 +16,13 @@ public interface BeanFactory
     
     /**
      * 
+     * @param clazz - the class of a bean
+     * @return null if the context doesn't contain a bean with Class <code>clazz</code>
+     */
+    Object getBean(Class<?> clazz);
+    
+    /**
+     * 
      * @param name - the name of a bean
      * @return true if the context contains a bean with <code>name</code>
      */

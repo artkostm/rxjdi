@@ -13,6 +13,7 @@ import javax.annotation.PreDestroy;
 import by.artkostm.rxj.annotation.Bean;
 import by.artkostm.rxj.annotation.Configuration;
 import by.artkostm.rxj.annotation.Inject;
+import by.artkostm.rxj.annotation.Singleton;
 
 public class Reflections {
     
@@ -62,7 +63,7 @@ public class Reflections {
         if (m.isAnnotationPresent(Bean.class))
         {
             final Bean bean = m.getAnnotation(Bean.class);
-            final boolean skipBody = bean.skipBpdy();
+            final boolean skipBody = bean.skipBody();
             return skipBody;
         }
         
@@ -73,15 +74,20 @@ public class Reflections {
     {
         if (annotaitedClass.isAnnotationPresent(annotationClass))
         {
-            Annotation annotation = annotaitedClass.getAnnotation(annotationClass);
+            final Annotation annotation = annotaitedClass.getAnnotation(annotationClass);
             if (annotation instanceof Configuration)
             {
-                Configuration conf = (Configuration) annotation;
+                final Configuration conf = (Configuration) annotation;
                 String name = conf.name();
                 if (name.isEmpty())
                 {
                     name = annotaitedClass.getSimpleName() + ".Configuration";
                 }
+                return name;
+            }
+            if (annotation instanceof Singleton)
+            {
+                final String name = annotaitedClass.getSimpleName() + ".Singleton";
                 return name;
             }
         }

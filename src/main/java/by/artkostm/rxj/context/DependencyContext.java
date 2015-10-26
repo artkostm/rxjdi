@@ -8,13 +8,13 @@ import org.apache.logging.log4j.Logger;
 
 import by.artkostm.rxj.metadata.LifeCycleMetadata;
 
-public abstract class ApplicationContext implements BeanFactory
+public abstract class DependencyContext implements BeanFactory
 {
-    protected static final Logger LOG = LogManager.getLogger(ApplicationContext.class);
+    protected static final Logger LOG = LogManager.getLogger(DependencyContext.class);
     
     protected Map<String, LifeCycleMetadata> context;
     
-    public ApplicationContext()
+    public DependencyContext()
     {
         context = new HashMap<>();
     }
@@ -29,6 +29,19 @@ public abstract class ApplicationContext implements BeanFactory
                 final LifeCycleMetadata metadata = context.get(beanName);
                 final Object bean = metadata.getObject();
                 return bean;
+            }
+        }
+        return null;
+    }
+    
+    @Override
+    public Object getBean(final Class<?> clazz)
+    {
+        for (LifeCycleMetadata lcm : context.values())
+        {
+            if (lcm.getType() == clazz)
+            {
+                return lcm.getObject();
             }
         }
         return null;
