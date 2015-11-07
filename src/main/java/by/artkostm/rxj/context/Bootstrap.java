@@ -4,8 +4,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import by.artkostm.rxj.context.module.BindModule;
-import by.artkostm.rxj.context.module.Module;
-import by.artkostm.rxj.util.MethodInvoker;
 
 public class Bootstrap
 {
@@ -20,7 +18,7 @@ public class Bootstrap
             try
             {
                 final BindModule newModule = clazz.newInstance();
-                MethodInvoker.invoke(newModule, Module.class.getDeclaredMethods()[0].getName(), null);
+                newModule.declare();
                 return newModule.getContext();
             }
             catch (Exception e)
@@ -29,5 +27,20 @@ public class Bootstrap
             }
         }
         return module.getContext();
+    }
+    
+    public static DependencyContext defaultModule(final String packageName)
+    {
+        final BindModule defaultModule = new BindModule() 
+        {    
+            @Override
+            public void declare() 
+            {
+                context = new ObservableContext(packageName);
+            }
+        };
+        modules.put(defaultModule.getClass(), defaultModule);
+        defaultModule.declare();
+        return defaultModule.getContext();
     }
 }
